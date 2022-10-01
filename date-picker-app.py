@@ -1,4 +1,3 @@
-from click import style
 from dash import Dash, html, dcc, Input, Output, callback, no_update
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
