@@ -7,4 +7,5 @@ Above is an example for a date-picker component and Card component in Dash
 
 After the date is selected,
 
-![Screenshot 2022-09-18 at 1 12 09 AM](https://user-images.githubusercontent.com/68361331/190886782-41ad254c-f706-405f-af89-2fd2fb926eaa.png)
+
+![Screenshot 2022-10-13 at 10 54 49 PM](https://user-images.githubusercontent.com/68361331/195751587-9239ebfa-1281-4f6d-8c83-847ec25d2120.png)
