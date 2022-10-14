@@ -1,9 +1,21 @@
-from dash import Dash, html, dcc, Input, Output, callback, no_update
+from dash import Dash, html, dcc, Input, Output, callback, no_update, dash_table
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from datetime import datetime, date
+import pandas as pd
+import plotly.graph_objects as go
+import numpy as np
+import pandas as pd
+from PIL import Image
+from wordcloud import WordCloud, STOPWORDS
+import matplotlib.pyplot as plt
+import plotly.express as px
+
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+
+df = pd.read_csv(
+    'https://raw.githubusercontent.com/plotly/datasets/master/horoscope_data.csv')
 
 # It has 2 layout containers - Datepicker and a Card Component
 app.layout = html.Div([dbc.Container(
@@ -28,60 +40,99 @@ app.layout = html.Div([dbc.Container(
 )], style={'height': '100vh', 'background-image': 'linear-gradient(to right, #051421, #042727)', 'margin': '0', 'scroll-behavior': 'smooth', 'position': 'sticky', 'overflow': 'hidden'})
 
 
-# Logic function to manipulate date and get the sunshine
+def generate_wordcloud_fig(wordcloud_image):
+    fig = px.imshow(wordcloud_image)
+    fig.update_layout(
+        xaxis={'visible': False},
+        yaxis={'visible': False},
+        margin={'t': 0, 'b': 0, 'l': 0, 'r': 0},
+        hovermode=False,
+        paper_bgcolor="#042727",
+        plot_bgcolor="#F9F9FA",
+    )
+    return fig
+
+
+def plotly_wordcloud(texts):
+    mask = np.array(Image.open("./pp.png"))
+
+    wordcloud = WordCloud(width=3000, height=2000, max_font_size=50, random_state=1, background_color='black', colormap='Set2',
+                          collocations=False, stopwords=set(STOPWORDS), mask=mask).generate(texts)
+    # generate image
+    wordcloud_image = wordcloud.generate(texts)
+    wordcloud_image = wordcloud_image.to_array()
+    fig = generate_wordcloud_fig(wordcloud_image)
+    return fig
+
+
 def get_sign(d):
     date_list = str(d).split('-')
     month, day = date_list[1], date_list[2]
     if month == '12':
-        astro_sign = 'Sagittarius' if (int(day) < 22) else 'capricorn'
+        astro_sign = 'sagittarius' if (int(day) < 22) else 'capricorn'
     elif month == '01':
-        astro_sign = 'Capricorn' if (int(day) < 20) else 'aquarius'
+        astro_sign = 'capricorn' if (int(day) < 20) else 'aquarius'
     elif month == '02':
-        astro_sign = 'Aquarius' if (int(day) < 19) else 'pisces'
+        astro_sign = 'aquarius' if (int(day) < 19) else 'pisces'
     elif month == '03':
-        astro_sign = 'Pisces' if (int(day) < 21) else 'aries'
+        astro_sign = 'pisces' if (int(day) < 21) else 'aries'
     elif month == '04':
-        astro_sign = 'Aries' if (int(day) < 20) else 'taurus'
+        astro_sign = 'aries' if (int(day) < 20) else 'taurus'
     elif month == '05':
-        astro_sign = 'Taurus' if (int(day) < 21) else 'gemini'
+        astro_sign = 'taurus' if (int(day) < 21) else 'gemini'
     elif month == '06':
-        astro_sign = 'Gemini' if (int(day) < 21) else 'cancer'
+        astro_sign = 'gemini' if (int(day) < 21) else 'cancer'
     elif month == '07':
-        astro_sign = 'Cancer' if (int(day) < 23) else 'leo'
+        astro_sign = 'cancer' if (int(day) < 23) else 'leo'
     elif month == '08':
-        astro_sign = 'Leo' if (int(day) < 23) else 'virgo'
+        astro_sign = 'leo' if (int(day) < 23) else 'virgo'
     elif month == '09':
-        astro_sign = 'Virgo' if (int(day) < 23) else 'libra'
+        astro_sign = 'virgo' if (int(day) < 23) else 'libra'
     elif month == '10':
-        astro_sign = 'Libra' if (int(day) < 23) else 'scorpio'
+        astro_sign = 'libra' if (int(day) < 23) else 'scorpio'
     elif month == '11':
         astro_sign = 'scorpio' if (int(day) < 22) else 'sagittarius'
-    return f'Here is your sunshine:  {astro_sign} ☀️ 🌞 '
+    # removed_df = df.drop(['date_range', 'current_date','description','compatibility'], axis=1)
+    matched_df = df.loc[df['sign'] == astro_sign]
+    texts_df = list(matched_df.description)
+    texts_df.extend(list(matched_df.mood))
+    texts = " ".join(texts_df)
+    fig = plotly_wordcloud(texts)
+    return f'🪄 Here is your sunshine:  {astro_sign} ☀️ 🌞 ', fig
 
 
 # app callback using datepicker and updating alert and div according to date provided
 
 
-@callback(
+@ callback(
     Output("show-sunshine", "children"),
     Input("date-pick", "value"),
     prevent_initial_call=True,
+
+
 )
 def update_output(d):
     if d is None:
         return no_update
-    text = get_sign(d)
+    text, fig = get_sign(d)
     return [
-        dbc.Card(
+        html.Div(dbc.Alert(
             [
-                dbc.CardImg(
-                    src="assets/birthday_image.jpeg", top=True),
-                dbc.CardBody(
-                    html.P(text,
-                           className="card-text")
-                ),
+                html.I(className="bi bi-info-circle-fill me-2"),
+                f'{text}',
             ],
-            style={"width": "24rem", 'margin-left': 'auto', 'margin-right': 'auto', 'margin-bottom': '21px'}),
+            color="info",
+            id=f'{text}',
+            className="d-flex align-items-center",
+        )),
+        html.Div([
+            dcc.Graph(
+                figure=fig,
+                config={"displayModeBar": False,
+                        "autosizable": True, "responsive": True}
+            )
+        ])
+
 
 
     ]

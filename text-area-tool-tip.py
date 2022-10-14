@@ -3,10 +3,23 @@ from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 import spacy
 from spacy import displacy
+import os
+os.system("python -m spacy download en_core_web_sm")
 
+"""
+Named entity recognition (NER)is probably the first step towards information extraction 
+that seeks to locate and classify named entities in text into pre-defined categories 
+such as the names of persons, organizations, locations, expressions of times, quantities, 
+monetary values, percentages, etc. 
+NER is used in many fields in Natural Language Processing (NLP)
+and it can help answering many real-world questions
+
+There are many libraries that supports NER, spacy, NLTK etc. Here we are developing the app using Spacy
+"""
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
+# python -m spacy download [model] - Here we are using small model
 nlp = spacy.load("en_core_web_sm")
 
 app.layout = html.Div([dbc.Container(
@@ -59,6 +72,8 @@ def get_entities(doc):
 def update_output(n_clicks, value):
     if n_clicks > 0 and value:
         doc = nlp(value)
+        # Visualize spaCy's guess at the syntactic structure of a sentence. Arrows point from children to heads, and are labelled by their relation type.
+        # https://spacy.io/universe/project/displacy
         ent_html = displacy.render(doc, style="ent", jupyter=False)
         final_entities = get_entities(doc)
         return [

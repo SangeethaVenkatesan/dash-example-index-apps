@@ -1,0 +1,10 @@
+dash==2.5.1
+dash_bootstrap_components==1.2.1
+dash_mantine_components==0.10.2
+matplotlib==3.6.0
+numpy==1.23.3
+pandas==1.4.4
+Pillow==9.2.0
+plotly==5.7.0
+spacy==3.4.1
+wordcloud==1.8.2.2
